@@ -37,12 +37,16 @@ AnimationHelper.prototype.frameAnimation = function(actionTime,obj){
 	return animation;
 }
 
-AnimationHelper.prototype.bubbleAnimation = function(pos,leftDirection,spriteNode){
+AnimationHelper.prototype.bubbleAnimation = function(sprite,spriteNode){
 
-	var winSize = cc.director.getWinSize();
+	var winSize = cc.director.getWinSize(),
+		leftDirection = sprite.toLeft;
 
 	var bubble = new cc.Sprite(spriteNode.getTexture());
-	bubble.setPosition(pos);
+
+	var pos = sprite.getPosition();
+	var px = leftDirection? pos.x-sprite.getContentSize().width/2 : pos.x+sprite.getContentSize().width/2;
+	bubble.setPosition(cc.p(px,pos.y));
 
 	var duration = (winSize.height - pos.y)/winSize.height * 10;
 	var moveBy = new cc.MoveBy(duration,cc.p(leftDirection?40:-40,winSize.height-pos.y+bubble.getContentSize().height)),
@@ -52,6 +56,7 @@ AnimationHelper.prototype.bubbleAnimation = function(pos,leftDirection,spriteNod
 		sequence = new cc.Sequence(spawn,removeSprite);
 
 	bubble.runAction(sequence);
+
 	return bubble;
 }
 

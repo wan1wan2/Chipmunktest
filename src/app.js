@@ -104,13 +104,18 @@ var ChipmunkDemo = cc.Layer.extend({
             self = this,
             cow = spriteObj;
 
-        var testSprite = new cc.Sprite(spriteObj.img),
+        var testSprite = new BgSprite(spriteObj.img),
             spriteSize = testSprite.getContentSize();
+        testSprite.toLeft = toLeft;
 
         var px = toLeft? winSize.width-spriteSize.width/2 : spriteSize.width/2,
             py = 20 + (self.waterLayer.height-40) * Math.random(); //上下留边
 
         testSprite.setPosition(cc.p(px,py));
+        if (!toLeft) 
+        {
+            testSprite.setRotationY(180);
+        }
 
         self.waterLayer.addChild(testSprite,5);
 
@@ -149,12 +154,24 @@ var ChipmunkDemo = cc.Layer.extend({
             bubbleInterval = new cc.DelayTime(0.4),//吐泡泡的间隔时间
             bubbleSeq;
 
-        var sequence = new cc.Sequence(bubbleDelay,bubbleAnimation,
-                                        bubbleInterval,bubbleAnimation,
-                                        bubbleInterval,bubbleAnimation);
+        var sequence0 = new cc.Sequence(bubbleDelay,bubbleAnimation),
+            sequence1 = new cc.Sequence(bubbleInterval,bubbleAnimation),
+            sequence;
+        var random = Math.random();
+        if (random<0.33)
+        {
+            sequence = sequence0;
+        }
+        else if (random<0.66)
+        {
+            sequence = new cc.Sequence(sequence0,sequence1);
+        }
+        else{
+            sequence = new cc.Sequence(sequence0,sequence1,sequence1);
+        }
+
         if (delay>0.4) 
         {
-            
             bubbleSeq = sequence;
         }
         else
@@ -172,7 +189,7 @@ var ChipmunkDemo = cc.Layer.extend({
         if (sprite) 
         {
             //创建泡泡精灵并加上action动画
-            var bubble = this.animateHelper.bubbleAnimation(sprite.getPosition(),true,this.bubbleNode);
+            var bubble = this.animateHelper.bubbleAnimation(sprite,this.bubbleNode);
             this.bubbleNode.addChild(bubble);
         }
     },
@@ -194,3 +211,12 @@ var ChipmunkDemo = cc.Layer.extend({
         console.log("game over, "+this.score);
     }
 });
+
+
+var BgSprite = cc.Sprite.extend({
+    toLeft:true,
+    ctor:function(img){
+        this._super(img);
+    }
+});
+
