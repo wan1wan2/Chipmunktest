@@ -88,9 +88,9 @@ var WaterLayer = cc.LayerColor.extend({
                                         cp.v(this.width, 0), 0),                    
                    new cp.SegmentShape(staticBody, cp.v(0, this.height),   
                                                 cp.v(this.width, this.height), 0),             
-                   new cp.SegmentShape(staticBody, cp.v(0, 0),   
+                   new cp.SegmentShape(staticBody, cp.v(20, 0),   
                                                 cp.v(0, this.height), 0),                    
-                   new cp.SegmentShape(staticBody, cp.v(this.width, 0),   
+                   new cp.SegmentShape(staticBody, cp.v(this.width-20, 0),   
                                         cp.v(this.width, this.height), 0)         
         ];  
 
@@ -109,7 +109,7 @@ var WaterLayer = cc.LayerColor.extend({
     initSprite:function(){
 
         //使用BatchNode来优化渲染
-        this.ballNode = new cc.SpriteBatchNode(res.sprite_png, 10);
+        this.ballNode = new cc.SpriteBatchNode(res.obs_png, 10);
         this.ballNode.setPosition(cc.p(0,0));
         this.addChild(this.ballNode,10,10);
 
@@ -132,14 +132,14 @@ var WaterLayer = cc.LayerColor.extend({
 
         //创建动态物体，第一个参数是质量，可以改变物体的物理特性，第二个参数是惯性值，其中的第一个参数是质量，第二个是宽度，第三个是高度
 
-        var p = cc.p(Math.random()*this.width,Math.random()*this.height*0.2);
+        var p = cc.p(20+Math.random()*(this.width-40),Math.random()*this.height*0.2);
         // var p = cc.p(Math.random()*this.width,this.height);
 
-        var body = new cp.Body(0.05,cp.momentForCircle(0.05,SPRITE_WIDTH,SPRITE_HEIGHT,cp.v(0,0))); 
+        var body = new cp.Body(0.05,cp.momentForBox(0.05, OBSTACLE_WIDTH, OBSTACLE_HEIGHT)); 
         body.setPos(p);//设置重心坐标
         this.space.addBody(body);
 
-        var shape = new cp.CircleShape(body,SPRITE_WIDTH/2+10,cp.v(0,0)); //创建形状对象
+        var shape = new cp.BoxShape(body,OBSTACLE_WIDTH+5,OBSTACLE_HEIGHT+5); //创建形状对象
         shape.setElasticity(0.3);
         shape.setFriction(0.5);
         shape.setCollisionType(Ball_CollisionType);
@@ -231,7 +231,7 @@ var WaterLayer = cc.LayerColor.extend({
                     y = child.getPosition().y,
                     horizon = (this.width-x)/this.width * 10,
                     vertical = (this.height-y)/this.height * 10;
-               child.getBody().applyImpulse(cp.v(horizon,vertical), cp.v(0,0)); 
+               child.getBody().applyImpulse(cp.v(horizon,vertical), cp.v(0,5)); 
             }    
         } 
     },
@@ -245,28 +245,30 @@ var WaterLayer = cc.LayerColor.extend({
                     y = child.getPosition().y,
                     horizon = (-x)/this.width * 10,
                     vertical = (this.height-y)/this.height * 10;
-               child.getBody().applyImpulse(cp.v(horizon,vertical), cp.v(0,0));
+               child.getBody().applyImpulse(cp.v(horizon,vertical), cp.v(0,5));
             }  
         } 
     },
-    updateBallAndPole:function(posBall,posPole,tag,vy){
-        if (this.checkShouldScore(posBall,posPole,vy)) 
-        {
+    updateBallAndPole:function(posBall,posPole,tag,vy,rot){
+        if (this.checkShouldScore(posBall,posPole,vy,rot)) 
+        {   
+            console.log("remove");
             this.removeBall(tag);
         }
     },
-    checkShouldScore:function(posBall,posPole,vy){
-        var condition0 = posBall.y>posPole.y+POLE_HEIGHT/2+SPRITE_HEIGHT/4,
-            condition1 = Math.abs(posBall.x-posPole.x)<SPRITE_WIDTH/2,
-            condition2 = vy<0;
-        return condition0&&condition1&&condition2;
+    checkShouldScore:function(posBall,posPole,vy,rot){
+        var condition0 = parseInt(posBall.y) >= parseInt(posPole.y),
+            condition1 = Math.abs(posBall.x-posPole.x)<Math.abs(rot.x * OBSTACLE_WIDTH/2),
+            condition2 = vy<0,
+            condition3 = Math.abs(rot.x)>=0.5;
+        return condition0&&condition1&&condition3;
     },
     collisionBegin: function(arb,space) {
 
-        if (arb.isFirstContact()) 
-        {
+        // if (arb.isFirstContact()) 
+        // {
             var shapes = arb.getShapes();
- 
+
             var shapeA = shapes[0];
             var shapeB = shapes[1];
             var posPole = shapeB.body.p,
@@ -274,12 +276,10 @@ var WaterLayer = cc.LayerColor.extend({
             var vy = arb.body_a.vy;
             
             this.space.addPostStepCallback(function () {
-                this.updateBallAndPole(posBall,posPole,shapeA.tag,vy);
+                this.updateBallAndPole(posBall,posPole,shapeA.tag,vy,arb.a.body.rot);
             }.bind(this));
-        }
-            
+        // }
         return true;
-
     },
     collisionPre : function ( arbiter, space ) {
         // console.log(arbiter.totalImpulse());

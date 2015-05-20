@@ -55,12 +55,19 @@ cc.game.onStart = function(){
     // Adjust viewport meta
     cc.view.adjustViewPort(false);
     // Setup the resolution policy and design resolution size
-    cc.view.setDesignResolutionSize(640, 1008, cc.ResolutionPolicy.SHOW_ALL);
+    cc.view.setDesignResolutionSize(640, 1048, cc.ResolutionPolicy.SHOW_ALL);
     // The game will be resized when browser size change
     cc.view.resizeWithBrowserSize(true);
     //load resources
+    // document.getElementById('gameCanvas').style.display = 'block';
     cc.LoaderScene.preload(g_resources, function () {
         cc.director.runScene(new PlayScene());
     }, this);
 };
-cc.game.run();
+
+window.onload = function(){
+
+    cc.game.run();
+}
+
+

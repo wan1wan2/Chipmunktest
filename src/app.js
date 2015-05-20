@@ -1,8 +1,9 @@
 var PlayScene = cc.Scene.extend({
     onEnter:function () {
-        this._super();
+        this._super(cc.color(255,255,255,0));
         var layer = new ChipmunkDemo();
         this.addChild(layer);
+        // this.color = cc.color(255,255,255,0);
     }
 });
 
@@ -24,6 +25,8 @@ var ChipmunkDemo = cc.Layer.extend({
 
         self.waterLayer = new WaterLayer(cc.color(139,191,211,255),winSize.width,winSize.height*0.6);
         self.addChild(self.waterLayer,0,1);
+
+        this.color = cc.color(255,255,255,255);
 
         var closeItem = new cc.MenuItemImage(
             res.CloseNormal_png,
@@ -68,7 +71,7 @@ var ChipmunkDemo = cc.Layer.extend({
 
         self.schedule(self.calTime,1);
 
-        self.schedule(self.backgroundSpriteShow,3);
+        // self.schedule(self.backgroundSpriteShow,3);
 
         self.backgroundSpriteShow();
     },
